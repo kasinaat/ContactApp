@@ -1,0 +1,154 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="js/app.js"></script>
+    <script src="js/mcis.ajax.js"></script>
+</head>
+
+<body>
+    <button id="btnload">Get HTML</button>
+<div id="contact-holder"></div>
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+===================================================
+(function (window) {
+    var ContactApp = (function () {
+        var contacts = [];
+        var container;
+
+        function Contact(name, phoneNo) {
+            this.name = name;
+            this.phoneNo = phoneNo;
+            this.setName = function (name) {
+                this.name = name;
+                return this;
+            };
+            this.setPhoneNo = function (phoneNo) {
+                this.phoneNo = phoneNo;
+                return this;
+            };
+        }
+
+        function view() {
+            var template = "<tr><td>{i}</td><td>{name}</td><td>{phoneNo}</td></tr>";
+            var result = [];
+            for (var i = 0; i < contacts.length; i++) {
+                result.push(template.replace("{i}", i + 1)
+                    .replace("{name}", contacts[i]["name"])
+                    .replace("{phoneNo}", contacts[i]["phoneNo"]));
+            }
+            var table = "<table>"
+                + "<tr><th>#</th><th>Name</th><th>Phone No</th></tr>"
+                + result.join("")
+                + "</table>";
+            container.innerHTML = table;
+        }
+
+        function init(element) {
+            var data = window.localStorage.getItem("contacts");
+            contacts = !data ? [] : JSON.parse(data);
+            container = element;
+        }
+        function commit() {
+            window.localStorage.setItem("contacts", JSON.stringify(contacts));
+        }
+        return {
+            init: init,
+            commit: commit,
+            view: view
+        };
+    })();
+    window.ContactApp = ContactApp;
+})(window);
+
+window.addEventListener("load", function () {
+    ContactApp.init(document.getElementById("contact-holder"));
+    document.getElementById("btnload").addEventListener("click", function() {
+        sendReq(render);
+    });
+});
+window.addEventListener("beforeunload", function () {
+    ContactApp.commit();
+});
+
+function render(data) {
+    document.getElementById("contact-holder").innerHTML = data + "<p>Test</p>";
+}
+
+function sendReq(callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "loader.html");
+    xhr.send(null);
+    xhr.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            callback.call(this, this.responseText);
+        }
+    };
+}
+
+==========================XXXXXXXXXXXXXXX========================
+
+
+
+
+(function (window) {
+    var document = window.document;
+    var AjaxApp = (function () {
+        return {
+            ajax: function (options, callbackSuccess, callbackError) {
+                var defaults = {
+                    url: "http://www.google.co.in",
+                    method: "GET",
+                    async: false,
+                    contentType: "application/x-www-form-urlencoded",
+                    data: ""
+                };
+                var settings = Object.assign({}, defaults, options);
+                var xhr = new XMLHttpRequest();
+                xhr.open("GET", "loader.html");
+                xhr.send(null);
+                xhr.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        callbackSuccess.call(this, this.responseText);
+                    }
+                };
+            }
+        }
+    })();
+    window._$ = AjaxApp;
+})(window);
+
+_$.ajax(
+    {
+        url: 'loader.html'
+    },
+    function (data) { },
+    function (data) { }
+
+
+
+
+================XXXXXXXXXX+=================
+
+
+
+(function(){
+    
+})();
