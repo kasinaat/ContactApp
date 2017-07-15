@@ -22,18 +22,32 @@
       var data = window.localStorage.getItem("phone");
       phoneBook = !data ? [] : JSON.parse(data);
     }
-    var controller = (function(ContactApp){
-      function add() {
-        console.log("kasinaat");
-        var contact = new Contact(
-          document.getElementById("inputName").value,
-          document.getElementById("inputMobile").value
-        );
-        phoneBook.push(contact);
+    var controller = (function(ContactApp) {
+      function add(event) {
+        var contactRegex = /[0-9]{10}/;
+        var contactName = document.getElementById("inputName").value;
+        var mobileNumber = document.getElementById("inputMobile").value;
+        if (!contactRegex.test(mobileNumber)) {
+          alert("wrong");
+          event.preventDefault();
+          return false;
+        } else if (
+          contactName === undefined ||
+          contactName === "" ||
+          contactName === null
+        ) {
+          alert("wrong");
+          event.preventDefault();
+          return false;
+        } else {
+          var contact = new Contact(contactName, mobileNumber);
+          phoneBook.push(contact);
+          return true;
+        }
       }
-      return{
-        add:add
-      }
+      return {
+        add: add
+      };
       ContactApp.controller = controller;
     })(ContactApp);
 
@@ -69,7 +83,7 @@
       init: init,
       commit: commit,
       view: view,
-      controller:controller
+      controller: controller
     };
   })();
   window.ContactApp = ContactApp;
@@ -104,9 +118,11 @@ window.addEventListener("beforeunload", function() {
 function render(data) {
   document.getElementById("contact-holder").innerHTML = data;
   if (document.getElementById("submit-btn")) {
-    document.getElementById("submit-btn").addEventListener("click", function() {
-      ContactApp.controller.add();
-    });
+    document
+      .getElementById("submit-btn")
+      .addEventListener("click", function(event) {
+        ContactApp.controller.add(event);
+      });
   }
 }
 
