@@ -1,19 +1,23 @@
-(function() {
-  var ContactApp = (function() {
+(function () {
+  var ContactApp = (function () {
     var phoneBook = [];
     var container = document.getElementById("contact-holder");
 
     // main-class representation to denote the model of the app
-    function Contact(name, mobile) {
+    function Contact(id, name, mobile) {
+      this.id = id;
       this.name = name;
       this.mobile = mobile;
-      this.setName = function() {
+      this.setName = function () {
         this.name = name;
         return this;
       };
-      this.setMobile = function() {
+      this.setMobile = function () {
         this.mobile = mobile;
         return this;
+      };
+      this.setId = function () {
+        this.id = id;
       };
     }
 
@@ -21,9 +25,13 @@
       localStorage.phone;
       var data = window.localStorage.getItem("phone");
       phoneBook = !data ? [] : JSON.parse(data);
+
     }
-    var controller = (function(ContactApp) {
+    var controller = (function (ContactApp) {
       function add(event) {
+        var len = phoneBook.length;
+        console.log(len);
+        var id = 100;
         var contactRegex = /[0-9]{10}/;
         var contactName = document.getElementById("inputName").value;
         var mobileNumber = document.getElementById("inputMobile").value;
@@ -40,9 +48,9 @@
           event.preventDefault();
           return false;
         } else {
-          var contact = new Contact(contactName, mobileNumber);
+          var contact = new Contact(id + len, contactName, mobileNumber);
           phoneBook.push(contact);
-          return true;
+          id++;
         }
       }
       return {
@@ -89,7 +97,7 @@
   window.ContactApp = ContactApp;
 })(window);
 
-window.addEventListener("hashchange", function() {
+window.addEventListener("hashchange", function () {
   var h = window.location.hash;
   console.log(h);
   if (h === "#/view") {
@@ -107,11 +115,11 @@ window.addEventListener("hashchange", function() {
   } */
 });
 
-window.addEventListener("load", function() {
+window.addEventListener("load", function () {
   window.location.hash = "";
   ContactApp.init();
 });
-window.addEventListener("beforeunload", function() {
+window.addEventListener("beforeunload", function () {
   ContactApp.commit();
 });
 // AJAX calls
@@ -120,7 +128,7 @@ function render(data) {
   if (document.getElementById("submit-btn")) {
     document
       .getElementById("submit-btn")
-      .addEventListener("click", function(event) {
+      .addEventListener("click", function (event) {
         ContactApp.controller.add(event);
       });
   }
@@ -130,7 +138,7 @@ function sendReq(callback, fname) {
   var xhr = new XMLHttpRequest();
   xhr.open("GET", fname);
   xhr.send(null);
-  xhr.onreadystatechange = function() {
+  xhr.onreadystatechange = function () {
     if (this.readyState == 4 && this.status == 200) {
       callback.call(this, this.responseText);
     }
