@@ -25,12 +25,10 @@
       localStorage.phone;
       var data = window.localStorage.getItem("phone");
       phoneBook = !data ? [] : JSON.parse(data);
-
     }
     var controller = (function (ContactApp) {
       function add(event) {
         var len = phoneBook.length;
-        console.log(len);
         var id = 100;
         var contactRegex = /[0-9]{10}/;
         var contactName = document.getElementById("inputName").value;
@@ -53,8 +51,41 @@
           id++;
         }
       }
+
+      function edit(id) {
+        for (var index = 0; index < phoneBook.length; index++) {
+          if (phoneBook[index].id == id) {
+            document.getElementById('inputName').value = phoneBook[index].name;
+            document.getElementById('inputMobile').value = phoneBook[index].mobile;
+            document.getElementById('submit-btn').value = "Update";
+          }
+          if (document.getElementById("submit-btn") && document.getElementById("submit-btn").value == "Update") {
+            document.getElementById('submit-btn').addEventListener('click', function () {
+              var name = document.getElementById('inputName').value;
+              var mobile = document.getElementById('inputMobile').value;
+              for (var index = 0; index < phoneBook.length; index++) {
+                if (phoneBook[index].id == id) {
+                  phoneBook[index].name = name;
+                  phoneBook[index].mobile = mobile;
+                }
+              }
+            });
+          }
+        }
+      }
+
+      function remove(id) {
+        for (var i = 0; i < phoneBook.length; i++) {
+          if (phoneBook[i].id == id) {
+            phoneBook.splice(i, 1);
+          }
+        }
+        window.location.href = "#/view";
+      }
       return {
-        add: add
+        add: add,
+        edit: edit,
+        remove: remove
       };
       ContactApp.controller = controller;
     })(ContactApp);
@@ -68,7 +99,8 @@
 						<tr>\
 							<th>S.no</th>\
 							<th>Name</th> \
-							<th>Mobile</th>\
+              <th>Mobile</th>\
+              <th>Action</th>\
 						</tr>\
 					</table>\
 				</div>";
@@ -78,9 +110,17 @@
         var serial = row.insertCell(0);
         var nameCell = row.insertCell(1);
         var mobileCell = row.insertCell(2);
+        var actionCell = row.insertCell(3);
         serial.innerHTML = i + 1;
         nameCell.innerHTML = phoneBook[i].name;
         mobileCell.innerHTML = phoneBook[i].mobile;
+        actionCell.innerHTML =
+          '<button class="btn btn-success"><a href="#/edit/' +
+          phoneBook[i].id +
+          '">Edit</a></button>\
+          <button id="delete" class="btn btn-danger"><a href="#/delete/' +
+          phoneBook[i].id +
+          '">delete</a></button>';
       }
     }
 
@@ -99,6 +139,9 @@
 
 window.addEventListener("hashchange", function () {
   var h = window.location.hash;
+  var editRegex = /#\/[edit]+\/[0-9]+/g;
+  var deleteRegex = /#\/[delete]+\/[0-9]+/g;
+  var idRegex = /\d+/g;
   console.log(h);
   if (h === "#/view") {
     ContactApp.view();
@@ -109,12 +152,14 @@ window.addEventListener("hashchange", function () {
   if (h === "") {
     document.getElementById("contact-holder").innerHTML = "";
   }
-  /* if (h === "#/delete") {
-    localStorage.clear();
-    ContactApp.init();
-  } */
+  if (editRegex.test(h)) {
+    sendReq(render, "add.html");
+  }
+  if (deleteRegex.test(h)) {
+    var id = idRegex.exec(h);
+    ContactApp.controller.remove(id[0]);
+  }
 });
-
 window.addEventListener("load", function () {
   window.location.hash = "";
   ContactApp.init();
@@ -123,14 +168,21 @@ window.addEventListener("beforeunload", function () {
   ContactApp.commit();
 });
 // AJAX calls
+var editRegex = /#\/[edit]+\/[0-9]+/g;
+var idRegex = /\d+/g;
+
 function render(data) {
   document.getElementById("contact-holder").innerHTML = data;
-  if (document.getElementById("submit-btn")) {
+  if (document.getElementById("contact-holder") && window.location.hash === "#/add") {
     document
       .getElementById("submit-btn")
       .addEventListener("click", function (event) {
         ContactApp.controller.add(event);
       });
+  }
+  if (document.getElementById('contact-holder') && editRegex.test(window.location.hash)) {
+    var id = idRegex.exec(window.location.hash);
+    ContactApp.controller.edit(id[0]);
   }
 }
 
