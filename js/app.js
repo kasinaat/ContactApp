@@ -148,12 +148,12 @@
           nameCell.innerHTML = phoneBook[i].name;
           mobileCell.innerHTML = phoneBook[i].mobile;
           actionCell.innerHTML =
-            '<button class="btn btn-success"><a href="#/edit/' +
+            '<a href="#/edit/' +
             phoneBook[i].id +
-            '">Edit</a></button>\
-          <button id="delete" class="btn btn-danger"><a href="#/delete/' +
+            '"data-toggle="tooltip" data-placement="top" title="Edit!"><i class="fa fa-pencil-square-o fa-2x" aria-hidden="false"></i>\
+          <a href="#/delete/' +
             phoneBook[i].id +
-            '">delete</a></button>';
+            '"data-toggle="tooltip" data-placement="top" title="Delete!"><i class="fa fa-trash fa-2x" aria-hidden="true"></i></i>';
         }
       }
 
