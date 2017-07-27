@@ -1,9 +1,15 @@
-(function () {
-  var ContactApp = (function () {
-    var phoneBook = [];
-    var container = document.getElementById("contact-holder");
 
-    // main-class representation to denote the model of the app
+/* ----------------------------Contact App---------------------------------- */
+
+(function () {
+  /* Immediately Invoked Function Expression
+   */
+
+  var ContactApp = (function () {
+    /* Array to store contacts */
+    var phoneBook = [];
+
+   /*  Main-class representation to denote the model of the app */
     function Contact(id, name, mobile) {
       this.id = id;
       this.name = name;
@@ -21,57 +27,77 @@
       };
     }
 
+    /* End of class defintion------------------------------- */
+
+
+
+/*-------------------- Init Function------------------ */
     function init() {
       localStorage.phone;
       var data = window.localStorage.getItem("phone");
       phoneBook = !data ? [] : JSON.parse(data);
     }
+/*-------------------- Init Function------------------ */
+
+
+
+
+/*-------------------- Controller Function------------------ */
     var controller = (function (ContactApp) {
       function add(event) {
         var len = phoneBook.length;
+        var flag = 0;
         var id = 100;
         var contactRegex = /[0-9]{10}/;
         var contactName = document.getElementById("inputName").value;
         var mobileNumber = document.getElementById("inputMobile").value;
-        if (!contactRegex.test(mobileNumber)) {
-          alert("wrong");
-          event.preventDefault();
-          return false;
-        } else if (
+        if (
           contactName === undefined ||
           contactName === "" ||
           contactName === null
         ) {
-          alert("wrong");
+          document.getElementById('errorBox').innerHTML = "Please enter Contact Name";
           event.preventDefault();
           return false;
+        } else if (!contactRegex.test(mobileNumber)) {
+          event.preventDefault();
+          document.getElementById('errorBox').innerHTML = "Please enter Valid Mobile Number";
+          return false;
         } else {
-          var contact = new Contact(id + len, contactName, mobileNumber);
-          phoneBook.push(contact);
-          id++;
+          for (var i = 0; i < phoneBook.length; i++) {
+            if (phoneBook[i].name === contactName) {
+              event.preventDefault();
+              flag = 1;
+              document.getElementById('errorBox').innerHTML = "Contact Already Exists";
+              break;
+            }
+          }
+          if (!flag) {
+            var contact = new Contact(id + len, contactName, mobileNumber);
+            phoneBook.push(contact);
+            id++;
+          }
         }
       }
 
-      function edit(id) {
-        for (var index = 0; index < phoneBook.length; index++) {
-          if (phoneBook[index].id == id) {
-            document.getElementById('inputName').value = phoneBook[index].name;
-            document.getElementById('inputMobile').value = phoneBook[index].mobile;
-            document.getElementById('submit-btn').value = "Update";
+      function edit() {
+        var name = document.getElementById('inputName').value;
+        var mobile = document.getElementById('inputMobile').value;
+        var idRegex = /\d+/g;
+          var flag = false;
+          var temp;
+          var contactId = idRegex.exec(window.location.hash);
+          for (var i = 0; i < phoneBook.length; i++) {
+            if (phoneBook[i].id == contactId) {
+              flag = true;
+              temp = i;
+              break;
+            }
           }
-          if (document.getElementById("submit-btn") && document.getElementById("submit-btn").value == "Update") {
-            document.getElementById('submit-btn').addEventListener('click', function () {
-              var name = document.getElementById('inputName').value;
-              var mobile = document.getElementById('inputMobile').value;
-              for (var index = 0; index < phoneBook.length; index++) {
-                if (phoneBook[index].id == id) {
-                  phoneBook[index].name = name;
-                  phoneBook[index].mobile = mobile;
-                }
-              }
-            });
+          if (flag) {
+            phoneBook[temp].name = name;
+            phoneBook[temp].mobile = mobile;
           }
-        }
       }
 
       function remove(id) {
@@ -90,10 +116,17 @@
       ContactApp.controller = controller;
     })(ContactApp);
 
-    function view() {
-      var contactHold = document.getElementById("contact-holder");
-      contactHold.innerHTML =
-        "<div class = 'col-lg-3' ></div>\
+/*-------------------- Controller Function End------------------ */
+
+
+
+/*-------------------- View Function ------------------ */
+
+    var view = (function () {
+      function contacts() {
+        var contactHold = document.getElementById("contact-holder");
+        contactHold.innerHTML =
+          "<div class = 'col-lg-3' ></div>\
 					<div class='row col-lg-6'>\
 					<table id = 'contact-table' class = 'table table-striped'>\
 						<tr>\
@@ -104,29 +137,64 @@
 						</tr>\
 					</table>\
 				</div>";
-      var table = document.getElementById("contact-table");
-      for (var i = 0; i < phoneBook.length; i++) {
-        var row = table.insertRow();
-        var serial = row.insertCell(0);
-        var nameCell = row.insertCell(1);
-        var mobileCell = row.insertCell(2);
-        var actionCell = row.insertCell(3);
-        serial.innerHTML = i + 1;
-        nameCell.innerHTML = phoneBook[i].name;
-        mobileCell.innerHTML = phoneBook[i].mobile;
-        actionCell.innerHTML =
-          '<button class="btn btn-success"><a href="#/edit/' +
-          phoneBook[i].id +
-          '">Edit</a></button>\
+        var table = document.getElementById("contact-table");
+        for (var i = 0; i < phoneBook.length; i++) {
+          var row = table.insertRow();
+          var serial = row.insertCell(0);
+          var nameCell = row.insertCell(1);
+          var mobileCell = row.insertCell(2);
+          var actionCell = row.insertCell(3);
+          serial.innerHTML = i + 1;
+          nameCell.innerHTML = phoneBook[i].name;
+          mobileCell.innerHTML = phoneBook[i].mobile;
+          actionCell.innerHTML =
+            '<button class="btn btn-success"><a href="#/edit/' +
+            phoneBook[i].id +
+            '">Edit</a></button>\
           <button id="delete" class="btn btn-danger"><a href="#/delete/' +
-          phoneBook[i].id +
-          '">delete</a></button>';
+            phoneBook[i].id +
+            '">delete</a></button>';
+        }
       }
-    }
+
+      function editView() {
+        if (document.getElementById('edit-btn')) {
+          var name = document.getElementById('inputName');
+          var mobile = document.getElementById('inputMobile');
+          var idRegex = /\d+/g;
+          var flag = false;
+          var temp;
+          var contactId = idRegex.exec(window.location.hash);
+          for (var i = 0; i < phoneBook.length; i++) {
+            if (phoneBook[i].id == contactId) {
+              flag = true;
+              temp = i;
+              break;
+            }
+          }
+          if (flag) {
+            name.value = phoneBook[temp].name;
+            mobile.value = phoneBook[temp].mobile;
+          }
+        }
+      }
+      return {
+        contacts: contacts,
+        editView: editView
+      }
+      ContactApp.view = view;
+    })();
+
+ /*-------------------- View Function End------------------ */
+
+/*-------------------- Commit Function ------------------ */
 
     function commit() {
       window.localStorage.setItem("phone", JSON.stringify(phoneBook));
     }
+
+/*-------------------- Commit Function End------------------ */
+
     return {
       init: init,
       commit: commit,
@@ -136,15 +204,25 @@
   })();
   window.ContactApp = ContactApp;
 })(window);
+/* ----------------------------Contact App End---------------------------------- */
 
+
+
+
+
+
+
+
+
+
+/* ----------------------------HASH CHANGE Event Listeners---------------------------------- */
 window.addEventListener("hashchange", function () {
   var h = window.location.hash;
   var editRegex = /#\/[edit]+\/[0-9]+/g;
   var deleteRegex = /#\/[delete]+\/[0-9]+/g;
   var idRegex = /\d+/g;
-  console.log(h);
   if (h === "#/view") {
-    ContactApp.view();
+    ContactApp.view.contacts();
   }
   if (h === "#/add") {
     sendReq(render, "add.html");
@@ -153,13 +231,23 @@ window.addEventListener("hashchange", function () {
     document.getElementById("contact-holder").innerHTML = "";
   }
   if (editRegex.test(h)) {
-    sendReq(render, "add.html");
+    sendReq(render, "edit.html");
+
   }
   if (deleteRegex.test(h)) {
     var id = idRegex.exec(h);
     ContactApp.controller.remove(id[0]);
   }
 });
+/* ----------------------------HASH CHANGE Event Listeners End---------------------------------- */
+
+
+
+
+
+
+/* ----------------------------Init And Commit---------------------------------- */
+
 window.addEventListener("load", function () {
   window.location.hash = "";
   ContactApp.init();
@@ -167,22 +255,27 @@ window.addEventListener("load", function () {
 window.addEventListener("beforeunload", function () {
   ContactApp.commit();
 });
-// AJAX calls
-var editRegex = /#\/[edit]+\/[0-9]+/g;
-var idRegex = /\d+/g;
+/* ----------------------------Init And Commit end---------------------------------- */
+
+
+
+/* ----------------------------Ajax Calls---------------------------------- */
+
 
 function render(data) {
   document.getElementById("contact-holder").innerHTML = data;
-  if (document.getElementById("contact-holder") && window.location.hash === "#/add") {
+  if (document.getElementById("submit-btn")) {
     document
       .getElementById("submit-btn")
       .addEventListener("click", function (event) {
         ContactApp.controller.add(event);
       });
   }
-  if (document.getElementById('contact-holder') && editRegex.test(window.location.hash)) {
-    var id = idRegex.exec(window.location.hash);
-    ContactApp.controller.edit(id[0]);
+  if (document.getElementById('contact-holder') && document.getElementById('edit-btn')) {
+    ContactApp.view.editView();
+    document.getElementById('edit-btn').addEventListener('click', function () {
+      ContactApp.controller.edit();
+    });
   }
 }
 
@@ -196,3 +289,7 @@ function sendReq(callback, fname) {
     }
   };
 }
+
+
+
+/* ----------------------------Ajax Calls End---------------------------------- */
