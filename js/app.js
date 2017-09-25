@@ -8,6 +8,7 @@
   var ContactApp = (function () {
     /* Array to store contacts */
     var phoneBook = [];
+    var ranId = 100;
 
    /*  Main-class representation to denote the model of the app */
     function Contact(id, name, mobile) {
@@ -36,6 +37,10 @@
       localStorage.phone;
       var data = window.localStorage.getItem("phone");
       phoneBook = !data ? [] : JSON.parse(data);
+      for (var i = 0; i < phoneBook.length; i++) {
+        if(phoneBook[i].id > ranId)
+          ranId = phoneBook[i].id;
+      }
     }
 /*-------------------- Init Function------------------ */
 
@@ -47,7 +52,7 @@
       function add(event) {
         var len = phoneBook.length;
         var flag = 0;
-        var id = 100;
+        var id = ranId;
         var contactRegex = /[0-9]{10}/;
         var contactName = document.getElementById("inputName").value;
         var mobileNumber = document.getElementById("inputMobile").value;
@@ -73,9 +78,9 @@
             }
           }
           if (!flag) {
-            var contact = new Contact(id + len, contactName, mobileNumber);
-            phoneBook.push(contact);
             id++;
+            var contact = new Contact(id , contactName, mobileNumber);
+            phoneBook.push(contact);
           }
         }
       }
